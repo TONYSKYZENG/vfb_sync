@@ -6,6 +6,7 @@ This is a toy project to create vfb and implenment it in user space
 - Raspberry pi 4
 - MHS-3.5inch RPi Display, https://www.lcdwiki.com/zh/MHS-3.5inch_RPi_Display
 ## How to run
+
 ```
 make
 sudo insmod *.ko
@@ -13,6 +14,13 @@ sudo ./lcd_bridge
 ```
 Then you can manupulate /dev/fbx
 
+### pyqt
+If you have pyqt installed, you can do the following
+
+```
+export QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0
+python3 clock.py
+```
 ## Known issues
 - Only vertical now
 - Perhaps wrong color
