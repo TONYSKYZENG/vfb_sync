@@ -11,7 +11,8 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/mman.h>
-
+#include <stdlib.h>
+#include <string.h>
 // 模拟 ESP32 的风格定义接口
 typedef struct {
     int spi_fd;
@@ -44,12 +45,21 @@ void hal_gpio_write(int line_fd, int val) {
     data.values[0] = val;
     ioctl(line_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &data);
 }
+// 增强型的复位操作
+void hal_lcd_reset(lcd_hw_t *hw) {
+    hal_gpio_write(hw->rst_fd, 1);
+    usleep(50000);
+    hal_gpio_write(hw->rst_fd, 0);
+    usleep(200000); // 必须拉低足够长时间
+    hal_gpio_write(hw->rst_fd, 1);
+    usleep(200000);
+}
 // SPI 发送字节 (利用 Linux 内核轮子)
 void hal_spi_send(int fd, uint8_t *data, size_t len) {
     struct spi_ioc_transfer tr = {
         .tx_buf = (unsigned long)data,
         .len = len,
-        .speed_hz = 8000000, // 24MHz
+        .speed_hz = 32000000, // 32MHz
         .bits_per_word = 8,
     };
     ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
@@ -116,15 +126,7 @@ void lcd_set_address_window(lcd_hw_t *hw, uint16_t x0, uint16_t y0, uint16_t x1,
     // Memory Write (0x2C)
     lcd_write_cmd(hw, 0x2C);
 }
-// 增强型的复位操作
-void hal_lcd_reset(lcd_hw_t *hw) {
-    hal_gpio_write(hw->rst_fd, 1);
-    usleep(50000);
-    hal_gpio_write(hw->rst_fd, 0);
-    usleep(200000); // 必须拉低足够长时间
-    hal_gpio_write(hw->rst_fd, 1);
-    usleep(200000);
-}
+
  lcd_hw_t my_lcd;
 void lcd_clear_landscape(lcd_hw_t *hw, uint16_t color) {
     // 1. 设置 MADCTL 为横屏 (Landscape)
@@ -157,6 +159,7 @@ void lcd_clear_landscape(lcd_hw_t *hw, uint16_t color) {
         hal_spi_send(hw->spi_fd, line_buf, sizeof(line_buf));
     }
 }
+uint16_t *tdata;
 void on_fb_dirty(int signum) {
     // 这里的逻辑就是：内核说脏了，我就通过 SPI 搬运到物理屏
     lcd_set_address_window(&my_lcd, 0, 0, 479, 319);
@@ -164,11 +167,17 @@ void on_fb_dirty(int signum) {
     // DC 高电平，准备传数据
     struct gpiohandle_data d = {.values = {1}};
     ioctl(my_lcd.dc_fd, GPIOHANDLE_SET_LINE_VALUES_IOCTL, &d);
-
+    uint16_t *pdata;
+    pdata = my_lcd.fb_ptr;
+    for (int i=0;i<320*480;i++){
+        uint16_t color =  pdata[i];
+        // 将高 8 位和低 8 位交换
+        tdata[i] = ((color & 0xFF) << 8) | ((color & 0xFF00) >> 8);
+    }
    // 2. 按照新的行宽搬运数据
     // 现在一行是 480 像素，总共 320 行
     for (int i = 0; i < 320; i++) {
-        hal_spi_send(my_lcd.spi_fd, (uint8_t *)(my_lcd.fb_ptr + i * 480), 480 * 2);
+        hal_spi_send(my_lcd.spi_fd, (uint8_t *)(tdata + i * 480), 480 * 2);
     }
 }
 
@@ -196,7 +205,7 @@ int main() {
 
     // 6. 清屏示例 (刷红色)
     printf("Drawing screen...\n");
-   
+    tdata = (uint16_t *)malloc(320*480*sizeof(uint16_t));
     // 满屏红色测试
 
     // 满屏红色测试
@@ -230,6 +239,6 @@ for(int i=0; i<480; i++) {
     while(1) pause();
 
     close(spi_fd);
-    
+    free(tdata);
     return 0;
 }
