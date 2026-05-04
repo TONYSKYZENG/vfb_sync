@@ -5,13 +5,13 @@ KERNEL_DIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
 # 目标文件名
-MODULE_NAME := ili9486_vfb
+MODULE_NAME := ili9486_vfb 
 APP_NAME := lcd_bridge
 
 # --- 内核模块部分 ---
 # obj-m 表示编译成模块
-obj-m := $(MODULE_NAME).o
-obj-m := ts_backend.o
+obj-m := ili9486_vfb.o ts_backend.o
+#obj-m := ts_backend.o
 # --- 编译规则 ---
 
 all: module app xpt2046
@@ -42,14 +42,16 @@ clean:
 # --- 辅助指令 ---
 # 加载驱动并自动赋予权限（方便调试）
 install:
-	@sudo insmod $(MODULE_NAME).ko
+	@sudo insmod ili9486_vfb.ko
+	@sudo insmod ts_backend.ko
 	@echo "Driver inserted. Checking /dev/..."
 	@ls -l /dev/fb* /dev/lcd_sync
 	@sudo chmod 666 /dev/lcd_sync
 	@sudo chmod 666 /dev/fb1
 
 remove:
-	@sudo rmmod $(MODULE_NAME)
+	@sudo rmmod ili9486_vfb
+	@sudo rmmod ts_backend
 	@echo "Driver removed."
 
 .PHONY: all module app clean install remove xpt2046

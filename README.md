@@ -11,13 +11,14 @@ This is a toy project to create vfb and cirtual input and implenment them in use
 
 ```
 make
-sudo insmod *.ko
-sudo ./lcd_bridge &
+sudo insmod ili9486_vfb.ko
+sudo ./lcd_bridge&
 ```
 Then you can manupulate /dev/fbx
 
 ```
-sudo ./xpt2046 &
+sudo insmod ts_backend.ko
+sudo ./xpt2046&
 ```
 Then the touch screen is online
 
