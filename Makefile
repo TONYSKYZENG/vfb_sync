@@ -11,10 +11,10 @@ APP_NAME := lcd_bridge
 # --- 内核模块部分 ---
 # obj-m 表示编译成模块
 obj-m := $(MODULE_NAME).o
-
+obj-m := ts_backend.o
 # --- 编译规则 ---
 
-all: module app
+all: module app xpt2046
 
 # 编译内核模块
 # 调用内核源码树的 Makefile 来处理复杂的内核依赖
@@ -27,12 +27,17 @@ module:
 app:
 	@echo "--- Building Userspace Bridge App ---"
 	$(CC) -O3 lcd_bridge.c -o $(APP_NAME)
+# 编译用户态干活程序
+# -O3 优化对 SPI 搬运性能很有帮助
+xpt2046:
+	@echo "--- Building Userspace  touch screen App ---"
+	$(CC) -O3 xpt2046.c -o xpt2046
 
 # --- 清理规则 ---
 clean:
 	@echo "--- Cleaning up ---"
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
-	rm -f $(APP_NAME)
+	rm -f $(APP_NAME) xpt2046
 
 # --- 辅助指令 ---
 # 加载驱动并自动赋予权限（方便调试）
@@ -47,4 +52,4 @@ remove:
 	@sudo rmmod $(MODULE_NAME)
 	@echo "Driver removed."
 
-.PHONY: all module app clean install remove
+.PHONY: all module app clean install remove xpt2046

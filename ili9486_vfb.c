@@ -158,5 +158,5 @@ module_init(vfb_init);
 module_exit(vfb_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Gemini");
+MODULE_AUTHOR("Tony");
 MODULE_DESCRIPTION("ILI9486 Virtual Framebuffer with Async Sync");

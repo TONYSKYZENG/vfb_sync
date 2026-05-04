@@ -51,3 +51,5 @@ dist/
 commit_info
 commit.sh
 lcd_bridge
+pointercal.txt
+xpt2046
