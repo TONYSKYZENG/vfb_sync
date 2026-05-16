@@ -159,7 +159,7 @@ void do_calibration(int spi_fd, int irq_fd, uint16_t *fbp) {
 
 int main() {
     int spi_fd = open("/dev/spidev0.1", O_RDWR);
-    int gpio_chip_fd = open("/dev/gpiochip3", O_RDWR);
+    int gpio_chip_fd = open("/dev/gpiochip0", O_RDWR);
     int calibrated =0;
     if (gpio_chip_fd < 0) {
         perror("Failed to open gpiochip (try sudo)");

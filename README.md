@@ -8,7 +8,7 @@ Make sure you have spi0.0 and spi0.1 exported
 - ts_backend.c create a ko and allows user input dev to kernel
 - xpt2046.c communicate with ts_backend kernal module and implement its function at user space
 ## Sample Hardware
-- Rockpi 5b
+- Raspberry pi 4
 - MHS-3.5inch RPi Display, https://www.lcdwiki.com/zh/MHS-3.5inch_RPi_Display
 ## How to run
 
