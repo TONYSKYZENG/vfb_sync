@@ -1,11 +1,14 @@
 # vfb_sync
 This is a toy project to create vfb and cirtual input and implenment them in user space
+## Requirements
+Make sure you have spi0.0 and spi0.1 exported
+## Description
 - ili9486_vfb.c create a ko and opens up /dev/fbx
 - lcd_bridge.c communicate with ili9486_vfb kernal module and implement its function at user space
 - ts_backend.c create a ko and allows user input dev to kernel
 - xpt2046.c communicate with ts_backend kernal module and implement its function at user space
 ## Sample Hardware
-- Raspberry pi 4
+- Rockpi 5b
 - MHS-3.5inch RPi Display, https://www.lcdwiki.com/zh/MHS-3.5inch_RPi_Display
 ## How to run
 
@@ -24,7 +27,15 @@ Then the touch screen is online
 
 
 ## PyQt 
-If you have pyqt installed, you can do the following
+You should firstly add current user to video and input groups by
+
+```
+sudo usermod -aG input $USER
+sudo usermod -aG video $USER
+sudo reboot
+```
+
+Then, if you have pyqt installed, you can do the following
 ### Display Only
 
 ```

@@ -190,14 +190,14 @@ int main() {
     ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
 
     // 1. 打开 GPIO 控制器 (树莓派4的 GPIO 在 /dev/gpiochip4)
-    int gpio_chip_fd = open("/dev/gpiochip0", O_RDWR);
+    int gpio_chip_fd = open("/dev/gpiochip4", O_RDWR);
     if (gpio_chip_fd < 0) {
         perror("Failed to open gpiochip (try sudo)");
         return -1;
     }
     my_lcd.spi_fd = spi_fd;
-    my_lcd.dc_fd = linux_gpio_export_output(gpio_chip_fd, 24);  // GPIO24
-    my_lcd.rst_fd = linux_gpio_export_output(gpio_chip_fd, 25); // GPIO25
+    my_lcd.dc_fd = linux_gpio_export_output(gpio_chip_fd, 20);  // GPIO24
+    my_lcd.rst_fd = linux_gpio_export_output(gpio_chip_fd, 21); // GPIO25
 
     // 5. 驱动屏幕
     printf("Initializing LCD...\n");

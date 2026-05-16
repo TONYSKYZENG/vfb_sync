@@ -86,9 +86,9 @@ int getY(int rx, int ry) {
 }
 // 定义与驱动一致的结构体
 struct ts_data {
-    int x;
-    int y;
-    int pressure;
+    uint32_t x;
+    uint32_t y;
+    uint32_t pressure;
 };
 
 void report_to_kernel(int fd, int x, int y, int pressed) {
@@ -159,7 +159,7 @@ void do_calibration(int spi_fd, int irq_fd, uint16_t *fbp) {
 
 int main() {
     int spi_fd = open("/dev/spidev0.1", O_RDWR);
-    int gpio_chip_fd = open("/dev/gpiochip0", O_RDWR);
+    int gpio_chip_fd = open("/dev/gpiochip3", O_RDWR);
     int calibrated =0;
     if (gpio_chip_fd < 0) {
         perror("Failed to open gpiochip (try sudo)");
@@ -167,6 +167,10 @@ int main() {
     }
     // 在 main 循环中调用：
 int backend_fd = open("/dev/ts_backend", O_WRONLY);
+ if (backend_fd < 0) {
+        perror("Failed to open ts_backend (try sudo)");
+        return -1;
+    }
    int irq_fd = linux_gpio_export_input(gpio_chip_fd, 17); // TP_IRQ
 
     // 尝试加载校准文件
@@ -176,7 +180,7 @@ int backend_fd = open("/dev/ts_backend", O_WRONLY);
                    &g_cal.a[0], &g_cal.a[1], &g_cal.a[2], 
                    &g_cal.a[3], &g_cal.a[4], &g_cal.a[5], 
                    &g_cal.a[6]) == 7) {
-            printf("成功加载 5 点校准数据。\n");
+            //printf("成功加载 5 点校准数据。\n");
             calibrated = 1;
         } else {
             fclose(fp);

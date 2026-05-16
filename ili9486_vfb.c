@@ -6,12 +6,13 @@
 #include <linux/device.h>
 #include <linux/uaccess.h>
 #include <linux/mm.h>
-
+#include <linux/version.h>
 #define WIDTH 320
 #define HEIGHT 480
 #define BPP 16
 #define VIDEOMEMSIZE (WIDTH * HEIGHT * BPP / 8)
-
+//avoid bugs of NULL palette
+static u32 vfb_pseudo_palette[16];
 static struct fb_info *info;
 static struct fasync_struct *async_queue;
 static int major;
@@ -94,7 +95,7 @@ static int __init vfb_init(void)
     info->fix.line_length = WIDTH * 2;
     info->fix.smem_len = VIDEOMEMSIZE;
     strcpy(info->fix.id, "ili9486_vfb");
-
+    info->pseudo_palette = vfb_pseudo_palette;
     // 4. 启用 Deferred IO (脏页跟踪)
     info->fbdefio = &vfb_defio;
     fb_deferred_io_init(info);
@@ -111,7 +112,13 @@ static int __init vfb_init(void)
         goto err_unreg_fb;
     }
     
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+    // 6.4及以上版本，只需要1个参数
     lcd_class = class_create("lcd_bridge");
+    #else
+        // 你的 6.1 内核走这里，需要2个参数
+        lcd_class = class_create(THIS_MODULE, "lcd_bridge");
+    #endif
     if (IS_ERR(lcd_class)) {
         ret = PTR_ERR(lcd_class);
         goto err_unreg_chr;

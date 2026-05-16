@@ -6,9 +6,9 @@
 #include <linux/slab.h>
 
 struct ts_data {
-    int x;
-    int y;
-    int pressure; // 1 为按下, 0 为抬起
+    u32 x;
+    u32 y;
+    u32 pressure; // 1 为按下, 0 为抬起
 };
 
 static struct input_dev *v_ts_dev;
